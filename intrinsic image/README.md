@@ -129,11 +129,11 @@ $$
 $$
 E_{t}(R)=\left\|\nabla_{x} R\right\|_{1}+\left\|\nabla_{y} R\right\|_{1}
 $$
-作者对$S=I \cdot R$进行反转，变换成了$(1-S)=1-I \cdot R=(1-R) \cdot I+(1-I)$, 通过让$\mathrm{H}=1-\mathrm{S}, \mathrm{J}=1-\mathrm{R}, \mathrm{T}=\mathrm{I}$以及$a=1$，原始变换成了$\mathrm{H}=\mathrm{J} \cdot \mathrm{T}+\mathrm{a}(1-\mathrm{T})$，最后公式类似雾霾图像的形成模型，H代表有雾霾的观测图像，J是需要还原出的图像，T是媒介传播，a是全球大气光，作者引用了何凯明等人提出的去雾算法的黑通道先验，黑通道先验公式如下所示，更具体地推导可以看[原始论文](http://mmlab.ie.cuhk.edu.hk/archive/2011/Haze.pdf)
+作者对$S=I \cdot R$进行反转，变换成了$(1-S)=1-I \cdot R=(1-R) \cdot I+(1-I)$, 通过让$\mathrm{H}=1-\mathrm{S}, \mathrm{J}=1-\mathrm{R}, \mathrm{T}=\mathrm{I}$以及$a=1$，原始变换成了$\mathrm{H}=\mathrm{J} \cdot \mathrm{T}+\mathrm{a}(1-\mathrm{T})$，最后公式类似雾霾图像的形成模型，H代表有雾霾的观测图像，J是需要还原出的图像，T是媒介传播，a是全球大气光，作者引用了何凯明等人提出的去雾算法的暗通道先验，暗通道先验公式如下所示，更具体地推导可以看[原始论文](http://mmlab.ie.cuhk.edu.hk/archive/2011/Haze.pdf)
 $$
 T=1-\min _{\Omega}\left(\min _{c \in\{r, g, b\}} \frac{H^{c}}{a}\right)
 $$
-黑通道先验是说在绝大多数非天空的局部区域内，某一些像素至少一个颜色通道具有很低的值，这是何凯明等人基于5000多张自然图像的统计得到的定理。作者根据公式推导出了亮通道先验，公式如下：
+暗通道先验是说在绝大多数非天空的局部区域内，某一些像素至少一个颜色通道具有很低的值，这是何凯明等人基于5000多张自然图像的统计得到的定理。作者根据公式推导出了亮通道先验，公式如下：
 $$
 I=1-\min _{\Omega}\left(\min _{c \in\{r, g, b\}}(1-S)^{c}\right)=\max _{\Omega}\left(\max _{c \in\{r, g, b\}} S^{c}\right)
 $$
@@ -253,3 +253,25 @@ $$
 $$
 
 相关资源：[**项目主页**](http://www.cs.cornell.edu/projects/cgintrinsics/)和[**代码**](https://github.com/lixx2938/CGIntrinsics)
+
+## BMVC2018
+
+### Deep Retinex Decomposition for Low-Light Enhancement
+
+这篇论文是将本质图像分解应用在低光照增强上面的。作者收集了一个包含低/正常光图像对的低光数据集(LOL)，并提出了一个在该数据集上学习到的深层Retinex网络，包括用于分解的Decom-Net和用于照明调节的Enhance-Net。在Decom-Net的训练过程中，没有分解反射率和光照的地面真实值。Decom-Net只在关键约束条件下学习，包括匹配的低/常光图像共享的一致反射率和光照的平滑度。在分解的基础上，利用Enhance-Net增强光照进行后续亮度增强，联合去噪时对反射率进行去噪操作。模型结构如下：
+
+![1555813193732](assets/1555813193732.png)
+
+两个输入分别为input_high和input_low，input_high在Decom-Net的输出是R_high和I_high，input_low在Decom-Net的输出是 R_low和I_low, Enhance-Net的输出是I_delta。
+
+Decom-Net loss: 
+
+- 四种重构损失，分别是R_high和I_high合成input_high，R_low和I_low合成input_low，R_low和I_high合成input_high，R_high和I_low合成input_low.
+- 反射图一致性：R_low和R_high构成的1范数损失。
+- 光照平滑约束：$\mathcal{L}_{i s}=\sum_{i=l o w, n o r m a l}\left\|\nabla I_{i} \circ \exp \left(-\lambda_{g} \nabla R_{i}\right)\right\|$，通过$\exp \left(-\lambda_{g} \nabla R_{i}\right)$的权重的作用，$\mathcal{L}_{i s}$在反射率梯度较大的情况下，即图像结构位置和光照不连续的情况下，放宽了平滑度的约束。分别是R_low和I_low以及R_high和I_high构成的两个约束
+
+Enhance-Net loss:
+
+- 重构损失: I_delta和R_low合成input_high
+- 光照平滑约束：I_delta和R_low构成的平滑约束。
+
