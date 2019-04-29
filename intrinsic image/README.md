@@ -1,3 +1,5 @@
+
+
 # 本质图像论文笔记
 
 [TOC]
@@ -37,17 +39,17 @@ $$
 $$
 \left(\mathbf{R}_{i}^{(k+1)}, \mathbf{S}_{i}^{(k+1)}\right)=\arg \min _{\mathbf{R}_{i}, \mathbf{S}_{i}} \sum_{t} w_{i t}^{(k)} e_{\mathrm{local}}(i, t)
 $$
-这里的$e_{\text {local}}(i, t)$是加上上面鲁棒损失函数的，$w_{i t}^{(k)}​$就是对不同帧的局部区域进行加权，方法是自适应的，所以会给那些影响局部能量大的外点更小的权重，减轻它们的影响。
+这里的$e_{\text {local}}(i, t)$是加上上面鲁棒损失函数的，$w_{i t}^{(k)}$就是对不同帧的局部区域进行加权，方法是自适应的，所以会给那些影响局部能量大的外点更小的权重，减轻它们的影响。
 
 公式5中还是由两个未知量$R$和$S$，然后作者在文中中，区域的光照可以表示为区域反射值得累加并通过一个函数表示，具体说明在支撑材料中，然而并没有找到那个材料。这里给出公式：
 $$
 \frac{1}{S(i, t)}=\mathbf{I}_{i t}^{\top} \mathbf{R}_{i} /\left(\mathbf{I}_{i t}^{\top} \mathbf{I}_{i t}\right)
 $$
-这里的$\mathbf{I}_{i t}^{\top}​$是$Nx1​$的列向量，是对第$t​$帧第$i​$个局部区域$W_i​$的像素进行纵向堆叠而成。于是公式4变为了$e_{\text {local}}(i, t)=\left\|\mathbf{M}_{i t} \mathbf{R}_{i}\right\|^{2}​$，其中$\mathbf{M}_{i t}=\mathbf{I} \mathbf{d}_{N}-\left(\mathbf{I}_{i t}^{\top} \mathbf{I}_{i t}\right)^{-1} \mathbf{I}_{i t} \mathbf{I}_{i t}^{\top}​$，$\mathbf{I} \mathrm{d}_{N}​$是一个$NxN​$的单位矩阵。将这个关系带入到公式5中，得到迭代公式如下：
+这里的$\mathbf{I}_{i t}^{\top}$是$Nx1$的列向量，是对第$t$帧第$i$个局部区域$W_i$的像素进行纵向堆叠而成。于是公式4变为了$e_{\text {local}}(i, t)=\left\|\mathbf{M}_{i t} \mathbf{R}_{i}\right\|^{2}$，其中$\mathbf{M}_{i t}=\mathbf{I} \mathbf{d}_{N}-\left(\mathbf{I}_{i t}^{\top} \mathbf{I}_{i t}\right)^{-1} \mathbf{I}_{i t} \mathbf{I}_{i t}^{\top}$，$\mathbf{I} \mathrm{d}_{N}$是一个$NxN$的单位矩阵。将这个关系带入到公式5中，得到迭代公式如下：
 $$
 \mathbf{R}_{i}^{(k+1)}=\arg \min _{\mathbf{R}_{i}} \sum_{t} w_{i t}^{(k)}\left\|\mathbf{M}_{i t} \mathbf{R}_{i}\right\|^{2}
 $$
-上述公式7只有一个未知数$\mathbf{R}_{i}​$，可以通过$SVD​$算法求出最优解$\mathbf{R}_{i}​$对应的与矩阵最小奇异值相关的奇异向量$\mathbf{M}_{i}​$=$\sum_{t} \sqrt{w_{i t}^{(k)}} \mathbf{M}_{i t}​$，最后将所有区域和在的一起的总局部能量$E_{\text {local}}​$为如下公式：
+上述公式7只有一个未知数$\mathbf{R}_{i}$，可以通过$SVD$算法求出最优解$\mathbf{R}_{i}$对应的与矩阵最小奇异值相关的奇异向量$\mathbf{M}_{i}$=$\sum_{t} \sqrt{w_{i t}^{(k)}} \mathbf{M}_{i t}$，最后将所有区域和在的一起的总局部能量$E_{\text {local}}$为如下公式：
 $$
 E_{\text { local }}=\frac{1}{|\Gamma|} \sum_{\mathcal{W}_{i} \in \Gamma} e_{\text {local}}(i)=\frac{1}{|\Gamma|} \sum_{\mathcal{W}_{i} \in \Gamma}\left\|\mathbf{M}_{i} \mathbf{R}_{i}\right\|^{2}
 $$
@@ -77,7 +79,7 @@ $$
 $$
 \underset{\mathbf{R}}{\operatorname{argmin}} E_{\text {local}}+\gamma_{\text {pair}} E_{\text {pair}} + \gamma_{\mathrm{reg}}E_{\mathrm{reg}}
 $$
-其中$E_{\mathrm{reg}}$为$\sum_{p} \sum_{t}\left(R(p)-\frac{3 I(p, t)}{\sum_{c} I(p, t)^{(c)}}\right)^{2}​$，是一个正则项，用于倾向于接近输入图像色度的反射率值。
+其中$E_{\mathrm{reg}}$为$\sum_{p} \sum_{t}\left(R(p)-\frac{3 I(p, t)}{\sum_{c} I(p, t)^{(c)}}\right)^{2}$，是一个正则项，用于倾向于接近输入图像色度的反射率值。
 
 ## ICCV2016
 
@@ -179,6 +181,74 @@ c)  最后共同训练合成数据集以及带有伪标签的真实数据集。
 ![1555506223412](assets/1555506223412.png)
 
 网络并没有采用传统的U-Net结构，作者指出了U-Net的缺点，由于高频特征可以直接通过远跳跃连接从编码器传到解码器，所以对于胡须以及皱纹这种高频特征是不知道它来自于Normal还是Albedo的，潜在空间所具有的信息性弱，所以作者提出了SFS-Net，通过一个共享Conv，然后分两路通过Normal Residual Blocks和Albedo Residual Blocks（残差块可以进行低频与高频的共同学习），得到Normal features和Albedo features，最后Normal features和Albedo features分别通过各自的Conv得到形状图以及反射图，生成光照信息则是将image features，Normal features和Albedo features三者进行concat，然后通过一个Light Estimator得到SH light，最后形状图和光照信息联合通过一个函数得到光照图，光照图和反射图相乘重建出原图。网络有四个LOSS，除了SH light是L2 loss，Normal，Albedo以及Recon都是L1 loss。网络更多细节参考[**论文附录**](https://arxiv.org/pdf/1712.01261v1)以及[**代码**](https://github.com/senguptaumd/SfSNet)。
+
+### Attentive Generative Adversarial Network for Raindrop Removal from A Single Image
+
+这篇论文是关于去雨算法，属于图像恢复的内容，但还是基于image-to-image的恢复问题，与本质图像很相似，有借鉴意义。
+
+话不多说，直接上模型：
+
+![1556455747939](assets/1556455747939.png)
+
+这是一个基于生成对抗的网络，生成器的输入是有雨滴的退化图像，输出则是复原后的输出图像。鉴别器的输入是生成器输出的假图像以及是真实的图像，判别器最后的输出是真假图像的概率。
+
+生成器由两个子网络组成:一个注意递归（attentive-recurrent）网络和一个上下文自动编码器（contextual autoencoder）。注意递归网络的目的是在输入图像中找到需要注意的区域（雨滴的区域）。这些区域主要是上下文自动编码器需要关注的雨点区域及其周围结构，以便生成更好的局部图像恢复，以及判别网络需要关注的区域。注意递归网络生成对应雨滴的mask（mask初始值都设置为0.5），mask的范围是0到1，不是二值mask，有雨滴的地方的强度越强。注意力是通过LSTM实现的，源代码中进行了四次迭代，下面是看源码画的流程图，每次迭代都会产生mask图，每次mask的雨滴能量强度越来越强烈，如上图所示。
+
+![1556456714469](assets/1556456714469.png)
+
+其中LSTM的结构图如下（除了g是conv+tanh，f，i，o都是conv + sigmiod）：
+
+![1556457650990](assets/1556457650990.png)
+
+这里为什么会越来越强烈，这不仅跟LSTM序列有关系（将前面LSTM得到的mask用于后面的LSTM继续进行生成更厉害的mask），还跟loss也有很大关系，mask的loss如下：
+$$
+\mathcal{L}_{A T T}(\{\mathbf{A}\}, \mathbf{M})=\sum_{t=1}^{N} \theta^{N-t} \mathcal{L}_{M S E}\left(\mathbf{A}_{t}, \mathbf{M}\right)
+$$
+$\boldsymbol{A}_{t}$是第$t$次迭代输出的mask，M为mask的二值标签，前面的$\theta$设置为0.8，N为迭代次数，设置为1，可以看出迭代次数越大，相应的权重也越大，那么为了最小化loss，网络会将权重越大的mask生成与真实的mask更加接近。
+
+上面是生成器的第一个loss，还有3个loss，下面的两个loss分别为多尺度损失（multi-scale losses）和知觉损失（perceptual loss）。通过论文中的原图进行介绍，原图如下:
+
+![1556458052334](assets/1556458052334.png)
+
+上图中的上下文自编码器就是生成器的另外一个子网络， 该子网络有16个conv-relu块（不算output层），加入跳过连接防止输出模糊。看了源代码，16个conv-relu块中，分别在第一层和第三层的输出引入了跳跃连接，在第二层和第四层进行了下采样，在倒数第二层和倒数第四层进行上采样，上采样的输出与跳跃连接过来的编码器特征进行相加，是对称的。另外，还有一点就是16个conv-relu块中，最中间的四层使用的是不改变特征size的空洞卷积，卷积核元素间距依次为2，4， 8， 16，为了保持size不变，padding要设置为卷积核元素间距。以pytorch为例，间距为8代码如下：
+
+```python
+nn.Conv2d(inchannel, outchannel, 3, 1, 8, dilation = 8) # size不变
+```
+
+多尺度损失$L_M$是将解码器的逐层特征与真实标签进行比较，从不同的尺度获取更多的上下文信息（这也是为啥叫上下文自编码器，名字有特色）。loss公式如下，$S_i$表示从解码器中提取的第$i$个输出,  使用最后5层、3层和1层的输出，其大小分别为原尺寸的$\frac{1}{4}, \frac{1}{2}$ 和 $1$。$T_i$代表原图resize成$S_i$对应的尺度。越高层的特征希望与原图越像，所以对应的权重loss越大，$\lambda_i$分别为0.6, 0.8, 1.0。
+$$
+\mathcal{L}_{M}(\{\mathbf{S}\},\{\mathbf{T}\})=\sum_{i=1}^{M} \lambda_{i} \mathcal{L}_{M S E}\left(\mathbf{S}_{i}, \mathbf{T}_{i}\right)
+$$
+知觉损失$L_P$是使用VGG-16，预测的生成图像和真实图像都经过VGG，两个输出进行MSE，得到两个输出特征之间的全局差异，公式如下，
+$$
+\mathcal{L}_{P}(\mathbf{O}, \mathbf{T})=\mathcal{L}_{M S E}(V G G(\mathbf{O}), V G G(\mathbf{T}))
+$$
+最后的一个$\mathcal{L}_{G A N}(\mathbf{O})$则是生成器传统的loss，欺骗鉴别器，让鉴别器预测生成图像为真的概率越大越好。loss公式如下：
+$$
+\mathcal{L}_{G A N}(\mathbf{O})=\log (1-D(\mathbf{O}))
+$$
+总的生成器的loss如下：
+$$
+\begin{aligned} \mathcal{L}_{G}=& 10^{-2} \mathcal{L}_{G A N}(\mathbf{O})+\mathcal{L}_{A T T}(\{\mathbf{A}\}, \mathbf{M}) +\mathcal{L}_{M}(\{\mathbf{S}\},\{\mathbf{T}\})+\mathcal{L}_{P}(\mathbf{O}, \mathbf{T}) \end{aligned}
+$$
+下面再来看看鉴别器，结构如下，鉴别器输入是真假图像，输出是0到1，值越大代表该图像是真图像的概率也就越大，所以真图像希望输出越接近1，假图像输出越接近0（与生成器相反，产生对抗），鉴别器前两个loss就是标准GAN的loss，公式为$-\log (D(\mathbf{R}))-\log (1-D(\mathbf{O}))$。
+
+![1556507160251](assets/1556507160251.png)
+
+另外还引入了一个注意力损失$\mathcal{L}_{m a p}\left(\mathbf{O}, \mathbf{R}, \mathbf{A}_{N}\right)$，公式如下，在鉴别真假图像，有基于全局的图像内容一致性和局部的图像内容一致性。而如果我们知道某一个区域（有雨滴的部分）是假的，基于局部的图像内容的一致性是非常有用的，但在测试阶段，是没有信息给出那些区域是有问题的，需要鉴别器自己去寻找这样的区域。所以作者在鉴别器中引入了一个注意力，下面蓝色的convs是将128层的特征生成1层的mask，与生成器mask做MSE，希望鉴别器也能生成带有雨滴注意力的特征，另外，作为对比，我们不希望真实图像产生注意力，因为是没有必要的，区分的就是雨滴和没雨滴，所以加了一个原图经过convs块的loss，不过希望它的mask趋近于0，没有注意力。
+$$
+\begin{aligned} \mathcal{L}_{m a p}\left(\mathbf{O}, \mathbf{R}, \mathbf{A}_{N}\right)=& \mathcal{L}_{M S E}\left(D_{\operatorname{map}}(\mathbf{O}), \mathbf{A}_{N}\right) \\ &+\mathcal{L}_{M S E}\left(D_{\operatorname{map}}(\mathbf{R}), \mathbf{0}\right) \end{aligned}
+$$
+总的鉴别器损失如下：
+$$
+\begin{aligned} \mathcal{L}_{D}\left(\mathbf{O}, \mathbf{R}, \mathbf{A}_{N}\right)=&-\log (D(\mathbf{R}))-\log (1-D(\mathbf{O})) \\ &+\gamma \mathcal{L}_{m a p}\left(\mathbf{O}, \mathbf{R}, \mathbf{A}_{N}\right) \end{aligned}
+$$
+项目主页：https://rui1996.github.io/raindrop/raindrop_removal.html
+
+Code：<https://github.com/rui1996/DeRaindrop>
+
+paper link: https://arxiv.org/abs/1711.10098
 
 ## ECCV2018
 
