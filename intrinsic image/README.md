@@ -209,6 +209,73 @@ $$
 $$
 其中$E_{\mathrm{reg}}$为$\sum_{p} \sum_{t}\left(R(p)-\frac{3 I(p, t)}{\sum_{c} I(p, t)^{(c)}}\right)^{2}$，是一个正则项，用于倾向于接近输入图像色度的反射率值。
 
+## PAMI2016
+
+### Intrinsic Scene Properties from a Single RGB-D Image
+
+作者：[Jonathan T. Barron](<https://jonbarron.info/>) ， Jitendra Malik
+
+之间介绍了一篇“Shape, Illumination, and Reflectance from Shading”，也就是SIRFS算法，这篇论文是SIRFS算法的延申，SIRFS假设输入图像是单个对象的分割图像，在单个全局光照模型下进行光照，这严重限制了其性能。相反，自然图像包含许多形状，这些形状可能相互遮挡或相互支持，以及以阴影、衰减和相互反射的形式出现的复杂的、空间变化的照明。作者在这篇文章中提出了Scene-SIRFS算法（extends SIRFS from objects to scenes），将混合的形状和混合的光照嵌入到输入图像的“软”分割中，另外通过kinect提供的有噪声的深度图提升形状估计，给定单个RGB-D图像推断出所有的场景属性。
+
+**原始的SIRFS**：
+$$
+\begin{array}{ll}{\underset{R, Z, L}{\operatorname{minimize}}} & {g(R)+f(Z)+h(L)} \\ {\text { subject to }} & {I=R+S(Z, L)}\end{array}
+$$
+其中$R$为log-reflectance image，$Z$为depth-map，$L$为27维的球面谐波Illumination向量。$S(Z, L)$是一个渲染引擎，它的作用是将$Z$线性化一组表面法线，然后通过这些表面法线和L构成log-shading，$g(R), f(Z)$ 和 $h(L)$分别为反射，形状，光照的损失函数。
+
+**Scene-SIRFS**：
+$$
+\begin{array}{l}\underset{R, Z, \psi, L, \omega}{\operatorname{minimize}} \space g(R)+\sum_{n=1}^{|Z|} f^{\prime}\left(Z^{n}, U^{n}\right)+h^{\prime}\left(\sum_{m=1}^{|L|} V^{m} L^{m}\right) \\ {\text { subject to } \quad I=R+S^{\prime}(Z, U, L, V)} \\ {U^{n}=\frac{\exp \left(B \psi^{n}\right)}{\sum_{n^{\prime}} \exp \left(B \psi^{n^{\prime}}\right)}, \forall_{n}} \\ {V^{m}=\frac{\exp \left(B \psi^{n}\right)}{\sum_{m^{\prime}} \exp \left(B \omega^{m^{\prime}}\right)}, \forall_{m}}\end{array}
+$$
+其中$Z=\left\{Z^{n}\right\}, \boldsymbol{U}=\left\{U^{n}\right\}, \boldsymbol{L}=\left\{L^{m}\right\}，\boldsymbol{V}=\left\{V^{m}\right\}$, 这里的$Z$和$L$是一组形状和一组光照，而原始的SIRFS是单个形状和单个光照，另外这里还多了两个东西，一个是$U$，一个是$V$，$U$和$V$可以看作两组“图像”，分别定义形状和光照的分布。$U$可以看作为可见性地图，如果$U_{i, j}^{n}$等于1，那么对应的$Z_{i, j}^{n}$在像素点(i, j)中就是可见的。$V$可以看作$L$中每个照明的所有权，如果$V_{i, j}^{m}$等于1，那么则代表像素点(i, j)被$L^m$完全照明。在形状上的先验现在是每个正规化独立的单深度图先验的求和。在光照上的先验现在是图像的每个像素的光照加权求和。形状混合概率$U$和光照混合概率$V$是分别被矩阵$\boldsymbol{\psi}$和$\boldsymbol{\omega}$权重化，矩阵的每一列是一个17维的向量，代表场景中形状混合和光照混合的所有权。$U$和$V$分别由它的权重矩阵以及B（RGB图像的归一化拉普拉斯特征向量）点乘，然后通过一个softmax函数得出。实验设立$|L| = |Z| = 8$.
+
+![1557746679068](assets/1557746679068.png)
+
+![1557746752305](assets/1557746752305.png)
+
+为了能进行优化，还需要定义这个混合形状的法线场$N^{\prime}(Z, \boldsymbol{U})$，将把每个$Z^n$线性化为x和y中的一组偏导数，取那些对U的期望，然后从那些期望的偏导数中构造一个正规场，公式如下：
+$$
+\begin{array}{c}{N^{\prime}(Z, \boldsymbol{U})=\left\{\frac{D^{x}}{D^{m}}, \frac{D^{y}}{D^{m}}, \frac{1}{D^{m}}\right\}} \\ {D^{x}=\sum_{n=1}^{|Z|} U^{n}\left(Z^{n} * h^{x}\right), \quad D^{y}=\sum_{n=1}^{|\boldsymbol{Z}|} U^{n}\left(Z^{n} * h^{y}\right)} \\ {D^{m}=\sqrt{1+\left(D^{x}\right)^{2}+\left(D^{y}\right)^{2}}} \\ {h^{x}=\frac{1}{8} \left[ \begin{array}{ccc}{1} & {0} & {-2} \\ {2} & {0} & {-2} \\ {1} & {0} & {-1}\end{array}\right], \quad h^{y}=\frac{1}{8} \left[ \begin{array}{ccc}{1} & {2} & {0} \\ {0} & {0} & {0} \\ {1} & {0} & {-1}\end{array}\right]}\end{array}
+$$
+根据上述公式，$S^{\prime}(Z, U, L, V)$可变换为如下形式：
+$$
+S^{\prime}(Z, \boldsymbol{U}, \boldsymbol{L}, \boldsymbol{V})=S\left(N^{\prime}(Z, \boldsymbol{U}), \sum_{m=1}^{|L|} V^{m} L^{m}\right)
+$$
+这里的$S(\cdot)$就是SIRFS里面的渲染引擎。
+
+使用形状和光照的混合来对深度不连续和空间变化的光照进行建模是必要的，这两者都容易在图像中产生轮廓、强度变化、纹理梯度等形式的变化。因此，我们应该将形状和光的混合物嵌入到某个空间中，每个混合物的“所有权”都依附于场景的分割。
+
+下面是嵌入的过程：给定一个图像，首先我们计算该图像的多尺度$Pb$。然后利用中间轮廓线索从mPb中生成一个亲和矩阵，计算出对应于最小特征值的17个特征向量$\left\{\mathbf{u}_{i}\right\}$。对于特征向量2到17，我们从每个$\mathbf{u}_{i}$中减去均值并除以它的标准差，然后将这些标准化特征向量连接到一个矩阵B中，每个像素一列。B是嵌入空间，其中每个混合分量由一个17维向量定义，向量与B的内积定义了混合分量在输入图像的每个像素处的优势程度。下图就是嵌入的可视化。
+
+![1557744433769](assets/1557744433769.png)
+
+**形状先验与Kinect图像**
+
+总的先验公式如下：
+$$
+f^{\prime}(Z, U)=\lambda_{\kappa} f_{\kappa}(Z)+\lambda_{f} f_{f}(Z)+\lambda_{\hat{Z}} f_{\hat{Z}}(Z, U)
+$$
+$f_{\kappa}(Z)$是最小化Z的平均曲率的局部变化，$f_{f}(Z)$则是最小化Z的斜率，鼓励Z正面平行。这两项是之前就有的，第三项是新的，如果Z被认为是“可见的”，则鼓励Z类似于原始的传感器深度图，将此方法应用于混合物中的每个单独深度图，而不是某个平均深度图。这鼓励场景的组成深度图是平滑的，同时允许混合物所暗示的预期深度图突然变化，从而允许我们建模深度不连续和遮挡。
+
+构造一个损失函数，以鼓励我们的恢复深度Z类似原始传感器深度$\hat{Z}$，首先，让我们通过量化对应于$\hat{Z}$的视差来近似误差的上界：
+$$
+Z_{i, j}^{e r r}=\left(1.4233 \times 10^{-5}\right) \hat{Z}_{i, j}^{2}+2
+$$
+第一项来自Kinect的基线，第二项是额外松弛。假设如果$Z_{i, j}$和$\tilde{Z}_{i, j}$在像素(i，j)小于$Z_{i, j}^{e r r}$，那么这个差是量化造成的，应该忽略。大于$Z_{i, j}^{e r r}$的误差将受到鲁棒性的惩罚，因为它们可能是由于传感器噪声或校准误差造成的。最后的损失函数：
+$$
+f_{\hat{Z}}(Z, U)=\sum_{i, j} U_{i, j} \max \left(0,\left|Z_{i, j}-\hat{Z}_{i, j}\right|-Z_{i, j}^{e r r}\right)^{\alpha_{\hat{Z}}}
+$$
+**光照先验**
+
+光照先验是SIRFS的简单扩展，做法是把一组光照的期望正则化。给定L和V，计算模型在图像各像素处的期望：
+$$
+\overline{L}_{i, j}=\sum_{m=1}^{|\boldsymbol{L}|} V_{i, j}^{m} L^{m}
+$$
+然后剩下的就和SIRFS的一样了，公式如下：
+$$
+h^{\prime}(\overline{L})=\lambda_{L} \sum_{i, j}\left(\overline{L}_{i, j}-\boldsymbol{\mu}_{L}\right)^{\mathrm{T}} \Sigma_{L}^{-1}\left(\overline{L}_{i, j}-\boldsymbol{\mu}_{L}\right)
+$$
+
 ## ICCV2016
 
 ### Deep Specialized Network for Illuminant Estimation
