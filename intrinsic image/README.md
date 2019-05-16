@@ -227,7 +227,7 @@ $$
 $$
 \begin{array}{l}\underset{R, Z, \psi, L, \omega}{\operatorname{minimize}} \space g(R)+\sum_{n=1}^{|Z|} f^{\prime}\left(Z^{n}, U^{n}\right)+h^{\prime}\left(\sum_{m=1}^{|L|} V^{m} L^{m}\right) \\ {\text { subject to } \quad I=R+S^{\prime}(Z, U, L, V)} \\ {U^{n}=\frac{\exp \left(B \psi^{n}\right)}{\sum_{n^{\prime}} \exp \left(B \psi^{n^{\prime}}\right)}, \forall_{n}} \\ {V^{m}=\frac{\exp \left(B \psi^{n}\right)}{\sum_{m^{\prime}} \exp \left(B \omega^{m^{\prime}}\right)}, \forall_{m}}\end{array}
 $$
-其中$Z=\left\{Z^{n}\right\}, \boldsymbol{U}=\left\{U^{n}\right\}, \boldsymbol{L}=\left\{L^{m}\right\}，\boldsymbol{V}=\left\{V^{m}\right\}$, 这里的$Z$和$L$是一组形状和一组光照，而原始的SIRFS是单个形状和单个光照，另外这里还多了两个东西，一个是$U$，一个是$V$，$U$和$V$可以看作两组“图像”，分别定义形状和光照的分布。$U$可以看作为可见性地图，如果$U_{i, j}^{n}$等于1，那么对应的$Z_{i, j}^{n}$在像素点(i, j)中就是可见的。$V$可以看作$L$中每个照明的所有权，如果$V_{i, j}^{m}$等于1，那么则代表像素点(i, j)被$L^m$完全照明。在形状上的先验现在是每个正规化独立的单深度图先验的求和。在光照上的先验现在是图像的每个像素的光照加权求和。形状混合概率$U$和光照混合概率$V$是分别被矩阵$\boldsymbol{\psi}$和$\boldsymbol{\omega}$权重化，矩阵的每一列是一个17维的向量，代表场景中形状混合和光照混合的所有权。$U$和$V$分别由它的权重矩阵以及B（RGB图像的归一化拉普拉斯特征向量）点乘，然后通过一个softmax函数得出。实验设立$|L| = |Z| = 8$.
+其中$Z=\left\{Z^{n}\right\}, \boldsymbol{U}=\left\{U^{n}\right\}, \boldsymbol{L}=\left\{L^{m}\right\}，\boldsymbol{V}=\left\{V^{m}\right\}$, 这里的$Z$和$L$是形状和光照的集合，而原始的SIRFS是单个形状和单个光照，另外这里还多了两个东西，一个是$U$，一个是$V$，$U$和$V$可以看作两组“图像”，分别定义形状和光照的分布。$U$可以看作为可见性地图，如果$U_{i, j}^{n}$等于1，那么对应的$Z_{i, j}^{n}$在像素点(i, j)中就是可见的。$V$可以看作$L$中每个照明的所有权，如果$V_{i, j}^{m}$等于1，那么则代表像素点(i, j)被$L^m$完全照明。在形状上的先验现在是每个正规化独立的单深度图先验的求和。在光照上的先验现在是图像的每个像素的光照加权求和。形状混合概率$U$和光照混合概率$V$是分别被矩阵$\boldsymbol{\psi}$和$\boldsymbol{\omega}$权重化，矩阵的每一列是一个17维的向量，代表场景中形状混合和光照混合的所有权。$U$和$V$分别由它的权重矩阵以及B（RGB图像的归一化拉普拉斯特征向量）点乘，然后通过一个softmax函数得出。实验设立$|L| = |Z| = 8$.
 
 ![1557746679068](assets/1557746679068.png)
 
