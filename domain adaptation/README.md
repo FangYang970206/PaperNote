@@ -56,4 +56,12 @@ $$
 $$
 R_{c}\left(\left\{\mathcal{T}_{i}\right\}\right)=\sum_{i \in \Omega}\left(\sqrt{N_{i}} \sum_{c}\left\|\left(\mathcal{T}_{i}\right)_{\bullet c}\right\|_{2}\right)
 $$
-其中$\mathcal{T}_{i}= \left(\mathcal{A}_{i}^{1}\right)^{\top} \Theta_{i}^{s} \mathcal{A}_{i}^{2}+\mathcal{D}_{i} \in \mathbb{R}^{l_{i} \times r_{i}}$，可以看到是转换公式中激活函数的内部部分。
+其中$\mathcal{T}_{i}= \left(\mathcal{A}_{i}^{1}\right)^{\top} \Theta_{i}^{s} \mathcal{A}_{i}^{2}+\mathcal{D}_{i} \in \mathbb{R}^{l_{i} \times r_{i}}$，可以看到是转换公式中激活函数的内部部分。这个正则化是一种“组Lasso形式”，组对应的是$i^{th} layer$中转换矩阵$T_i$的列, 正则化器鼓励将整个$T_i$的列清零，从而自动确定$r_i$，前提是我们从足够大的值开始。同样的，可以构建类似的正则化$R_r$确定$l_i$, 最后的总loss为：
+$$
+\mathcal{L}=\mathcal{L}_{\text { fixed }}+\lambda_{r}\left(R_{c}+R_{r}\right)
+$$
+训练过程并不是直接使用总loss进行反向传播，作者采用的是用$Adam$优化器最小化$\mathcal{L}_{\text { fixed }}$，迭代次数提前定义好了，通过这样迭代，得到估计的转换矩阵$\hat{T_{i}}$，作者对自动选择复杂度的方法分为了两步：
+$$
+\begin{aligned} \overline{\mathcal{T}}_{i} &=\underset{\mathcal{T}_{i}}{\operatorname{argmin}} \frac{1}{4 t}\left\|\mathcal{T}_{i}-\hat{\mathcal{T}}_{i}\right\|_{2}^{2}+\lambda_{r} R_{c}\left(\mathcal{T}_{i}\right) \\ \mathcal{T}_{i}^{*} &=\underset{\mathcal{T}_{i}}{\operatorname{argmin}} \frac{1}{4 t}\left\|\mathcal{T}_{i}-\overline{\mathcal{T}}_{i}\right\|_{2}^{2}+\lambda_{r} R_{r}\left(\mathcal{T}_{i}\right) \end{aligned}
+$$
+先自动选择$r_i$，然后再自动选择$l_i$.
