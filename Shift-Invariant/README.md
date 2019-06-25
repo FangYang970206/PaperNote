@@ -51,3 +51,5 @@
 ![1561450685174](assets/1561450685174.png)
 
 在image-to-image任务中，对于baseline方法(顶部)，输入偏移会导致出现不同的窗口模式，而作者的方法平稳了输出，生成相同的窗口模式，对输入平移不敏感，更好。
+
+如何使用作者方法，参考https://github.com/adobe/antialiased-cnns#2-antialias-your-own-architecture。
