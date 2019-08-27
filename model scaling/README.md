@@ -14,7 +14,7 @@ $$
 $$
 其中$\mathcal{F}_{i}^{L_{i}}$表示的是层$F_i$在$stage$ $i$重复了$L_i$次，$\left\langle H_{i}, W_{i}, C_{i}\right\rangle$是第$i$层的输入。根据上面的定义，这篇文章的目标可以抽象成如下公式：
 $$
-\begin{array}{l}{\max _{d, w, r} \quad \operatorname{Accuracy}(\mathcal{N}(d, w, r))} \\ {\text {s.t.} \quad \mathcal{N}(d, w, r)=\bigoplus_{i=1 \ldots s} \hat{\mathcal{F}}_{i}^{d \cdot \hat{L}_{i}}\left(X_{\left\langle r \cdot \hat{H}_{i}, r \cdot \hat{W}_{i}, w \cdot \hat{C}_{i}\right\rangle}\right)} \\ {\text { Memory }(\mathcal{N}) \leq \text { target-memory }} \\ {\text { FLOPS }(\mathcal{N}) \leq \text { target flops }}\end{array}
+\begin{array}{l}{\max _{d, w, r} \quad \operatorname{Accuracy}(\mathcal{N}(d, w, r))} \\ {\text {s.t.} \quad \mathcal{N}(d, w, r)=\bigoplus_{i=1 \ldots s} \hat{\mathcal{F}}_{i}^{d \cdot \hat{L}_{i}}\left(X_{\left\langle r \cdot \hat{H}_{i}, r \cdot \hat{W}_{i}, w \cdot \hat{C}_{i}\right\rangle}\right)} \\ {\text { Memory }(\mathcal{N}) \leq \text { target-memory }} \\ {\text { FLOPS }(\mathcal{N}) \leq \text { target flops }}\end{array}
 $$
 搜索最优的$d, w, r$，使精确度最高，并且参数量以及运算复杂度不超过目标量。
 
