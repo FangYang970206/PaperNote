@@ -329,3 +329,52 @@ class Discriminator(nn.Module):
 ## 损失函数
 
 损失函数总共有四个，分别是Adversarial loss， Cycle loss， Identity loss以及CAM loss。
+
+**Adversarial loss**: 
+$$
+\begin{aligned} L_{g a n}^{s \rightarrow t} &=\left(\mathbb{E}_{x \sim X_{t}}\left[\left(D_{t}(x)\right)^{2}\right]\right.\\ &\left.+E_{x \sim X_{s}}\left[\left(1-D_{t}\left(G_{s \rightarrow t}(x)\right)\right)^{2}\right]\right) \end{aligned}
+$$
+对抗损失没有采用原始的log函数，使用的是MSE.
+
+ **Cycle loss**:
+$$
+L_{c y c l e}^{s \rightarrow t}=\mathbb{E}_{x \sim X_{s}}\left[\left|x-G_{t \rightarrow s}\left(G_{s \rightarrow t}(x)\right)\right|_{1}\right]
+$$
+cycle-gan架构下的环一致性loss，A翻译到B，然后B翻译到A‘，A和A’需要相同，loss采用的是L1loss.
+
+**Identity loss**:
+$$
+L_{i d e n t i t y}^{s \rightarrow t}=\mathbb{E}_{x \sim X_{t}}\left[\left|x-G_{s \rightarrow t}(x)\right|_{1}\right]
+$$
+Identity loss保证了输入图像A和输出图像B的颜色分布是相似的.
+
+**CAM loss**
+
+生成器和鉴别器的CAM loss有些不同:
+
+生成器CAM loss，采用的是BCE_loss:
+$$
+\begin{aligned} L_{\text {cam}}^{s \rightarrow t} &=-\left(\mathbb{E}_{x \sim X_{s}}\left[\log \left(\eta_{s}(x)\right)\right]\right.\\ &+\mathbb{E}_{x \sim X_{t}}\left[\log \left(1-\eta_{s}(x)\right)\right] \end{aligned}
+$$
+鉴别器CAM loss, 我看源代码是采用MSE，没有下面的log函数，所以这估计是论文公式打印出错了，我提交issue问问，确定好了再改过来。
+$$
+\begin{aligned} L_{c a m}^{D_{t}} &=\mathbb{E}_{x \sim X_{t}}\left[\left(\eta_{D_{t}}(x)\right)^{2}\right] \\ &+\mathbb{E}_{x \sim X_{s}}\left[\log \left(1-\eta_{D_{t}}\left(G_{s \rightarrow t}(x)\right)\right)^{2}\right] \end{aligned}
+$$
+用CAM的原因是利用辅助分类器$\eta_{s}$和$\eta_{D_{t}}$的信息，给定一个图像$x \in\left\{X_{s}, X_{t}\right\}$，$G_{s \rightarrow t}$和$D_{t}$了解它们需要改进的地方，或者在当前状态下两个域之间的最大区别是什么。
+
+## 实验结果
+
+下面论文中的效果对比图，确实有效地控制形状和纹理，没有发生较大地畸变，很不错。
+
+![](assets/1566976987937.png)
+
+下面的是实验指标：
+
+![1566977116709](assets/1566977116709.png)
+
+可以看到在单个物体的翻译效果很好，特别是在selfie2anime，由于喜欢动漫，看到效果图，这才仔细看了哈哈哈。
+
+## 结语
+
+作者在https://github.com/taki0112/UGATIT/issues/6给出了selfie2anime数据集以及他们的预训练模型，想生成自己的动漫头像，盘起来吧！:smile:
+
