@@ -1,5 +1,5 @@
 # PaperNote
-- Note: md files have showing problem, use typora to open them will be fine.
+- 注意：markdown如果有显示问题，推荐用最强markdown编辑器typora打开
 
-some notes and slides for intrinsic image, object detection and GANs
+记录一些论文的阅读笔记，博客同步，推荐去博客看。
 
